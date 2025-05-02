@@ -1,19 +1,23 @@
 import ssl
 import certifi
 ssl_context = ssl.create_default_context(cafile=certifi.where())
+
 import os
 import logging
 import time
 import re
 from datetime import datetime, timedelta
 import threading
+import json
+import random
+
 import telebot
+from telebot.types import Message
 import openai
 import gspread
 import pandas as pd
 import easyocr
 from dotenv import load_dotenv
-from telebot.types import Message
 from oauth2client.service_account import ServiceAccountCredentials
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
