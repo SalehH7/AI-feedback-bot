@@ -39,6 +39,8 @@ logging.info("🚀 Bot is starting...")
 
 os.environ["EASYOCR_CACHE_DIR"] = "/tmp/easyocr_models"
 reader = easyocr.Reader(['ar', 'en'], download_enabled=True)
+print("✅ EasyOCR model ready")
+
 import json
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 service_account_info = json.loads(os.getenv("service_account"))
@@ -157,7 +159,7 @@ def handle_message(message: Message):
 while True:
     try:
         logging.info("🚀 Bot is starting...")
-        bot.polling(none_stop=True, interval=0, timeout=60)
+        bot.polling(non_stop=True, interval=0, timeout=60)
     except Exception as e:
         logging.error(f"❌ Bot crashed: {e}")
         time.sleep(30)
