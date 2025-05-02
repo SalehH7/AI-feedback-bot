@@ -34,9 +34,11 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
 # Initialize services
 bot = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode="HTML")
+
 os.environ["EASYOCR_CACHE_DIR"] = "/tmp/easyocr_models"
 reader = easyocr.Reader(['ar', 'en'], download_enabled=True)
-
+print("✅ Bot token loaded:", TELEGRAM_TOKEN[:10], "...")
+logging.info("🚀 Bot is starting...")
 import json
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 service_account_info = json.loads(os.getenv("service_account"))
