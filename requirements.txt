@@ -1,0 +1,10 @@
+python-telegram-bot
+openai
+gspread
+easyocr
+scikit-learn
+pandas
+python-dotenv
+streamlit
+oauth2client
+certifi
