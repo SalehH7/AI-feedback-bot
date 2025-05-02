@@ -1,9 +1,24 @@
-telebot==0.0.5
-openai==1.26.0
-gspread==6.2.0
-pandas==2.2.2
-easyocr==1.7.2
-python-dotenv==1.0.1
-oauth2client==4.1.3
-scikit-learn==1.6.1
-certifi==2025.4.26
+import ssl
+import certifi
+ssl_context = ssl.create_default_context(cafile=certifi.where())
+
+import os
+import logging
+import time
+import re
+from datetime import datetime, timedelta
+import threading
+import json
+import random
+
+import telebot
+from telebot.types import Message
+import openai
+import gspread
+import pandas as pd
+import easyocr
+from dotenv import load_dotenv
+from oauth2client.service_account import ServiceAccountCredentials
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
