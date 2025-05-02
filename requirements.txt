@@ -1,24 +1,10 @@
-import ssl
-import certifi
-ssl_context = ssl.create_default_context(cafile=certifi.where())
-
-import os
-import logging
-import time
-import re
-from datetime import datetime, timedelta
-import threading
-import json
-import random
-
-import telebot
-from telebot.types import Message
-import openai
-import gspread
-import pandas as pd
-import easyocr
-from dotenv import load_dotenv
-from oauth2client.service_account import ServiceAccountCredentials
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
+python-telegram-bot==13.15
+openai==1.26.0
+gspread==6.2.0
+easyocr==1.7.2
+scikit-learn==1.6.1
+pandas==2.2.3
+python-dotenv==1.0.1
+oauth2client==4.1.3
+streamlit==1.45.0
+certifi==2025.4.26
