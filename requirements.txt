@@ -1,4 +1,4 @@
-python-telegram-bot
+pyTelegramBotAPI
 openai
 gspread
 easyocr
