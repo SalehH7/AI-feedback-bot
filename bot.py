@@ -33,7 +33,6 @@ TELEGRAM_TOKEN = os.getenv("BOT_TOKEN")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
 # Initialize services
-client = openai.OpenAI(api_key=OPENAI_API_KEY)
 bot = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode="HTML")
 reader = easyocr.Reader(['ar', 'en'])
 import json
