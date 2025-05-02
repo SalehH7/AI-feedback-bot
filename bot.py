@@ -34,6 +34,8 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
 # Initialize services
 bot = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode="HTML")
+print("✅ Bot token loaded:", TELEGRAM_TOKEN[:10], "...")
+logging.info("🚀 Bot is starting...")
 
 os.environ["EASYOCR_CACHE_DIR"] = "/tmp/easyocr_models"
 reader = easyocr.Reader(['ar', 'en'], download_enabled=True)
