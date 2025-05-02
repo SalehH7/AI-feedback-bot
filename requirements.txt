@@ -1,8 +1,10 @@
 pyTelegramBotAPI==4.26.0
 openai==1.26.0
 gspread==6.2.0
---find-links https://download.pytorch.org/whl/torch_stable.html
+--find-links https://download.pytorch.org/whl/cpu
 torch==2.2.1+cpu
+torchvision==0.17.1+cpu
+numpy==1.26.4
 easyocr==1.7.2
 scikit-learn==1.6.1
 pandas==2.2.3
