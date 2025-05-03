@@ -37,8 +37,10 @@ reader = easyocr.Reader(['ar', 'en'])
 
 # Load service account credentials from environment variable
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-with open("service_account.json") as f:
-    service_account_info = json.load(f)
+service_account_raw = os.getenv("service_account")
+if not service_account_raw:
+    raise ValueError("❌ Environment variable 'service_account' not found.")
+service_account_info = json.loads(service_account_raw)
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, scope)
 
 # Google Sheets setup
@@ -150,7 +152,7 @@ def handle_message(message: Message):
         "Bug Report": "تم تسجيل المشكلة وسنراجعها في أقرب وقت 🔧"
     }
     if classification in auto_replies:
-        bot.send_message(message.chat.id, auto_replies[classification])
+        bot.reply_to(message, auto_replies[classification])
 
 # Start bot polling with crash recovery
 while True:
