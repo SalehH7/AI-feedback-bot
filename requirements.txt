@@ -1,5 +1,5 @@
 pyTelegramBotAPI==4.26.0
-openai==1.26.0
+openai==0.28.1
 gspread==6.2.0
 torch==2.2.1
 torchvision==0.17.1
