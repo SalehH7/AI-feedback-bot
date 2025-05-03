@@ -8,20 +8,18 @@ import time
 import re
 from datetime import datetime, timedelta
 import threading
-import json
-import random
-
 import telebot
-from telebot.types import Message
 import openai
 import gspread
 import pandas as pd
 import easyocr
 from dotenv import load_dotenv
+from telebot.types import Message
 from oauth2client.service_account import ServiceAccountCredentials
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
+import json
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -33,24 +31,23 @@ TELEGRAM_TOKEN = os.getenv("BOT_TOKEN")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
 # Initialize services
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 bot = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode="HTML")
-print("✅ Bot token loaded:", TELEGRAM_TOKEN[:10], "...")
-logging.info("🚀 Bot is starting...")
+reader = easyocr.Reader(['ar', 'en'])
 
-os.environ["EASYOCR_CACHE_DIR"] = "/tmp/easyocr_models"
-reader = easyocr.Reader(['ar', 'en'], download_enabled=True)
-print("✅ EasyOCR model ready")
-
-import json
+# Load service account credentials from environment variable
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-service_account_info = json.loads(os.getenv("service_account"))
+service_account_raw = os.getenv("service_account")
+if not service_account_raw:
+    raise ValueError("❌ Environment variable 'service_account' not found.")
+service_account_info = json.loads(service_account_raw)
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, scope)
-# Google Sheets setup
 
+# Google Sheets setup
 gc = gspread.authorize(credentials)
 spreadsheet = gc.open_by_key(SPREADSHEET_ID)
 
-# Weekly Sheet Handling
+# Create or access the sheet for the current week
 def get_current_week_sheet():
     week_name = f"Week of {datetime.now().strftime('%Y-%m-%d')}"
     try:
@@ -62,7 +59,7 @@ def get_current_week_sheet():
 
 sheet = get_current_week_sheet()
 
-# Load all training data (only from tabs that start with 'Week of ')
+# Load all training data from weekly sheets
 def load_all_training_data():
     messages, labels = [], []
     worksheets = spreadsheet.worksheets()
@@ -78,7 +75,7 @@ def load_all_training_data():
 
 messages, labels = load_all_training_data()
 
-# Initialize ML model
+# Initialize and train the ML model
 local_model = Pipeline([
     ("vectorizer", TfidfVectorizer(max_features=5000, ngram_range=(1, 2))),
     ("classifier", MultinomialNB())
@@ -89,14 +86,14 @@ if messages and labels:
 else:
     logging.warning("⚠️ No training data for ML model.")
 
-# Classification keywords
+# Keyword-based classification rules
 SUGGESTION_KEYWORDS = ["اقترح", "اقتراح", "نريد", "يجب", "ياليت", "نتمنى", "ضيفو", "نبي", "تضيفون"]
 POSITIVE_KEYWORDS = ["شكرا", "مشكور", "يعطيكم العافية", "رائع", "جميل", "افضل لعبة", "مبدعين", "حلوة", "اللعبة رهيبة", "رهيبة"]
 NEGATIVE_KEYWORDS = ["اللعبة سيئة", "تطبيق زبالة", "فاشلين", "مافي شي عدل", "ما استفدت", "لعبتكم خايسة"]
 BUG_KEYWORDS = ["يعلق", "تكررت", "ما تشتغل", "كراش", "قلتش", "bug", "crash", "glitch", "راحت", "المكينة", "المكينه"]
 INAPPROPRIATE_WORDS = ["قذر", "كلب", "حيوان", "تفو", "بنعال", "حمار", "يا ابن", "زق", "وسخ", "كلزق", "نجلخ", "كلز"]
 
-# Classification function
+# Function to classify messages
 def classify_message(text):
     text_lower = text.lower()
     try:
@@ -115,7 +112,7 @@ def classify_message(text):
         logging.error(f"⚠️ Error in classification: {e}")
         return "Neutral"
 
-# Telegram message handler
+# Handler for incoming Telegram messages
 @bot.message_handler(content_types=["text", "photo", "sticker"])
 def handle_message(message: Message):
     user_id = message.from_user.id
@@ -125,8 +122,8 @@ def handle_message(message: Message):
 
     if message.content_type == "text":
         text = message.text.strip()
-    elif message.content_type in ["photo", "sticker"]:
-        file_info = bot.get_file(message.photo[-1].file_id if message.photo else message.sticker.file_id)
+    elif message.content_type == "photo":
+        file_info = bot.get_file(message.photo[-1].file_id)
         downloaded_file = bot.download_file(file_info.file_path)
         image_path = f"/tmp/{file_info.file_path.split('/')[-1]}"
         with open(image_path, 'wb') as f:
@@ -134,6 +131,8 @@ def handle_message(message: Message):
         text = reader.readtext(image_path, detail=0, paragraph=True)
         text = " ".join(text)
         os.remove(image_path)
+    elif message.content_type == "sticker":
+        text = "[Sticker]"
 
     classification = classify_message(text)
     if classification == "Inappropriate":
@@ -146,7 +145,7 @@ def handle_message(message: Message):
     import random
     time.sleep(random.uniform(1.2, 2.5))
 
-    # الردود التلقائية بناءً على التصنيف
+    # Auto-replies based on classification
     auto_replies = {
         "Positive": "شكرًا على كلامك الجميل! 💖",
         "Suggestion": "تم تسجيل اقتراحك، نقدر اهتمامك 🙏",
@@ -155,11 +154,11 @@ def handle_message(message: Message):
     if classification in auto_replies:
         bot.reply_to(message, auto_replies[classification])
 
-# Start polling
+# Start bot polling with crash recovery
 while True:
     try:
         logging.info("🚀 Bot is starting...")
-        bot.polling(non_stop=True, interval=0, timeout=60)
+        bot.polling(none_stop=True, interval=0, timeout=60)
     except Exception as e:
         logging.error(f"❌ Bot crashed: {e}")
         time.sleep(30)
